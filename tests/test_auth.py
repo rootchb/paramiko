@@ -51,7 +51,10 @@ class NullServer (ServerInterface):
         if username == 'slowdive':
             return 'publickey,password'
         if username == 'paranoid':
-            if not self.paranoid_did_password and not self.paranoid_did_public_key:
+            if (
+                not self.paranoid_did_password and
+                not self.paranoid_did_public_key
+            ):
                 return 'publickey,password'
             elif self.paranoid_did_password:
                 return 'publickey'
@@ -97,7 +100,11 @@ class NullServer (ServerInterface):
     def check_auth_interactive(self, username, submethods):
         if username == 'commie':
             self.username = username
-            return InteractiveQuery('password', 'Please enter a password.', ('Password', False))
+            return InteractiveQuery(
+                'password',
+                'Please enter a password.',
+                ('Password', False),
+            )
         return AUTH_FAILED
 
     def check_auth_interactive_response(self, responses):
@@ -166,7 +173,7 @@ class TestEdgeCaseFailures(TestAuth):
         self.start_server()
         self.tc.connect(hostkey=self.public_host_key)
         try:
-            remain = self.tc.auth_password('bad-server', 'hello')
+            self.tc.auth_password('bad-server', 'hello')
         except:
             etype, evalue, etb = sys.exc_info()
             self.assertTrue(issubclass(etype, AuthenticationException))
@@ -181,7 +188,7 @@ class TestEdgeCaseFailures(TestAuth):
         self.start_server()
         self.tc.connect()
         try:
-            remain = self.tc.auth_password('unresponsive-server', 'hello')
+            self.tc.auth_password('unresponsive-server', 'hello')
         except:
             etype, evalue, etb = sys.exc_info()
             self.assertTrue(issubclass(etype, AuthenticationException))
@@ -270,7 +277,10 @@ class TestMultipartAuth(TestAuth):
         """
         self.start_server()
         self.tc.connect(hostkey=self.public_host_key)
-        remain = self.tc.auth_password(username='paranoid', password='paranoid')
+        remain = self.tc.auth_password(
+            username='paranoid',
+            password='paranoid',
+        )
         self.assertEqual(['publickey'], remain)
         key = DSSKey.from_private_key_file(_support('test_dss.key'))
         remain = self.tc.auth_publickey(username='paranoid', key=key)
