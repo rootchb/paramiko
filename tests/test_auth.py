@@ -36,6 +36,9 @@ from .loop import LoopSocket
 from .util import _support, slow
 
 
+# TODO: see what other tests in other modules might want to move in here
+
+
 _pwd = u('\u2022')
 
 
@@ -104,8 +107,7 @@ class NullServer (ServerInterface):
         return AUTH_FAILED
 
 
-class AuthTest (unittest.TestCase):
-
+class TestAuth(unittest.TestCase):
     def setUp(self):
         self.socks = LoopSocket()
         self.sockc = LoopSocket()
@@ -133,6 +135,14 @@ class AuthTest (unittest.TestCase):
         self.assertTrue(self.event.is_set())
         self.assertTrue(self.ts.is_active())
 
+
+class TestEdgeCaseFailures(TestAuth):
+    """
+    Tests situations not involving successful or attempted-but-failed auth.
+
+    E.g. disconnects, invalid auth types, etc.
+    """
+
     def test_bad_auth_type(self):
         """
         verify that we get the right exception when an unsupported auth
@@ -148,6 +158,39 @@ class AuthTest (unittest.TestCase):
             self.assertEqual(BadAuthenticationType, etype)
             self.assertEqual(['publickey'], evalue.allowed_types)
 
+    def test_auth_gets_disconnected(self):
+        """
+        verify that we catch a server disconnecting during auth, and report
+        it as an auth failure.
+        """
+        self.start_server()
+        self.tc.connect(hostkey=self.public_host_key)
+        try:
+            remain = self.tc.auth_password('bad-server', 'hello')
+        except:
+            etype, evalue, etb = sys.exc_info()
+            self.assertTrue(issubclass(etype, AuthenticationException))
+
+    @slow
+    def test_auth_non_responsive(self):
+        """
+        verify that authentication times out if server takes to long to
+        respond (or never responds).
+        """
+        self.tc.auth_timeout = 1  # 1 second, to speed up test
+        self.start_server()
+        self.tc.connect()
+        try:
+            remain = self.tc.auth_password('unresponsive-server', 'hello')
+        except:
+            etype, evalue, etb = sys.exc_info()
+            self.assertTrue(issubclass(etype, AuthenticationException))
+            self.assertTrue('Authentication timeout' in str(evalue))
+
+
+class TestPasswordAuth(TestAuth):
+    # TODO: store as new suite along w/ successful password tests (The utf8
+    # ones below I think)
     def test_bad_password(self):
         """
         verify that a bad password gets the right exception, and that a retry
@@ -162,37 +205,6 @@ class AuthTest (unittest.TestCase):
             etype, evalue, etb = sys.exc_info()
             self.assertTrue(issubclass(etype, AuthenticationException))
         self.tc.auth_password(username='slowdive', password='pygmalion')
-        self.verify_finished()
-
-    def test_multipart_auth(self):
-        """
-        verify that multipart auth works.
-        """
-        self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
-        remain = self.tc.auth_password(username='paranoid', password='paranoid')
-        self.assertEqual(['publickey'], remain)
-        key = DSSKey.from_private_key_file(_support('test_dss.key'))
-        remain = self.tc.auth_publickey(username='paranoid', key=key)
-        self.assertEqual([], remain)
-        self.verify_finished()
-
-    def test_interactive_auth(self):
-        """
-        verify keyboard-interactive auth works.
-        """
-        self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
-
-        def handler(title, instructions, prompts):
-            self.got_title = title
-            self.got_instructions = instructions
-            self.got_prompts = prompts
-            return ['cat']
-        remain = self.tc.auth_interactive('commie', handler)
-        self.assertEqual(self.got_title, 'password')
-        self.assertEqual(self.got_prompts, [('Password', False)])
-        self.assertEqual([], remain)
         self.verify_finished()
 
     def test_interactive_auth_fallback(self):
@@ -227,31 +239,40 @@ class AuthTest (unittest.TestCase):
         self.assertEqual([], remain)
         self.verify_finished()
 
-    def test_auth_gets_disconnected(self):
+
+class TestInteractiveAuth(TestAuth):
+    # TODO: identify other test cases to expand around this one
+    def test_interactive_auth(self):
         """
-        verify that we catch a server disconnecting during auth, and report
-        it as an auth failure.
+        verify keyboard-interactive auth works.
         """
         self.start_server()
         self.tc.connect(hostkey=self.public_host_key)
-        try:
-            remain = self.tc.auth_password('bad-server', 'hello')
-        except:
-            etype, evalue, etb = sys.exc_info()
-            self.assertTrue(issubclass(etype, AuthenticationException))
 
-    @slow
-    def test_auth_non_responsive(self):
+        def handler(title, instructions, prompts):
+            self.got_title = title
+            self.got_instructions = instructions
+            self.got_prompts = prompts
+            return ['cat']
+        remain = self.tc.auth_interactive('commie', handler)
+        self.assertEqual(self.got_title, 'password')
+        self.assertEqual(self.got_prompts, [('Password', False)])
+        self.assertEqual([], remain)
+        self.verify_finished()
+
+
+class TestMultipartAuth(TestAuth):
+    # TODO: clarify the name of this to show it's only one specific multipart
+    # auth style
+    def test_multipart_auth(self):
         """
-        verify that authentication times out if server takes to long to
-        respond (or never responds).
+        verify that multipart auth works.
         """
-        self.tc.auth_timeout = 1  # 1 second, to speed up test
         self.start_server()
-        self.tc.connect()
-        try:
-            remain = self.tc.auth_password('unresponsive-server', 'hello')
-        except:
-            etype, evalue, etb = sys.exc_info()
-            self.assertTrue(issubclass(etype, AuthenticationException))
-            self.assertTrue('Authentication timeout' in str(evalue))
+        self.tc.connect(hostkey=self.public_host_key)
+        remain = self.tc.auth_password(username='paranoid', password='paranoid')
+        self.assertEqual(['publickey'], remain)
+        key = DSSKey.from_private_key_file(_support('test_dss.key'))
+        remain = self.tc.auth_publickey(username='paranoid', key=key)
+        self.assertEqual([], remain)
+        self.verify_finished()
