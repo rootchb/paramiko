@@ -32,6 +32,8 @@ if not os.environ.get('DISABLE_LOGGING', False):
 def trans():
     """
     Create `LoopSocket`-based server/client `Transport`s, yielding the latter.
+
+    Uses `NullServer` under the hood.
     """
     # NOTE: based on the setup/teardown/start_server/verify_finished methods
     # found in ye olde test_auth.py
