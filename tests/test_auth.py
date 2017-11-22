@@ -20,18 +20,12 @@
 Some unit tests for authenticating over a Transport.
 """
 
-import sys
-import threading
-import unittest
-
 from paramiko import (
-    Transport, RSAKey, DSSKey, BadAuthenticationType,
-    AuthenticationException,
+    DSSKey, BadAuthenticationType, AuthenticationException,
 )
 from pytest import raises
 
-from ._loop import LoopSocket
-from ._util import _support, slow, NullServer, _pwd
+from ._util import _support, slow, _pwd
 
 
 class TestEdgeCaseFailures:
