@@ -48,7 +48,6 @@ requires_gss_auth = unittest.skipUnless(
 )
 
 
-
 class ClientTest(unittest.TestCase):
     def setUp(self):
         self.sockl = socket.socket()

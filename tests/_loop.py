@@ -96,5 +96,3 @@ class LoopSocket (object):
             self.__lock.release()
         if m is not None:
             m.__unlink()
-
-
