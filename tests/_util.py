@@ -62,6 +62,10 @@ class NullServer(ServerInterface):
         # And allow them to set a (single...meh) expected public blob (cert)
         self.__expected_public_blob = kwargs.pop('public_blob', None)
         super(NullServer, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger('test-server')
+
+    def _log(self, message):
+        self.logger.debug(message)
 
     def get_allowed_auths(self, username):
         if username == 'slowdive':
