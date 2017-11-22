@@ -89,8 +89,7 @@ class TransportTest(unittest.TestCase):
         self.server = NullServer()
         self.assertTrue(not event.is_set())
         self.ts.start_server(event, self.server)
-        self.tc.connect(hostkey=public_host_key,
-                        username='slowdive', password='pygmalion')
+        self.tc.connect(username='slowdive', password='pygmalion')
         event.wait(1.0)
         self.assertTrue(event.is_set())
         self.assertTrue(self.ts.is_active())
@@ -146,8 +145,7 @@ class TransportTest(unittest.TestCase):
         self.assertEqual(False, self.tc.is_authenticated())
         self.assertEqual(False, self.ts.is_authenticated())
         self.ts.start_server(event, server)
-        self.tc.connect(hostkey=public_host_key,
-                        username='slowdive', password='pygmalion')
+        self.tc.connect(username='slowdive', password='pygmalion')
         event.wait(1.0)
         self.assertTrue(event.is_set())
         self.assertTrue(self.ts.is_active())
@@ -168,8 +166,7 @@ class TransportTest(unittest.TestCase):
         self.assertTrue(not event.is_set())
         self.socks.send(LONG_BANNER)
         self.ts.start_server(event, server)
-        self.tc.connect(hostkey=public_host_key,
-                        username='slowdive', password='pygmalion')
+        self.tc.connect(username='slowdive', password='pygmalion')
         event.wait(1.0)
         self.assertTrue(event.is_set())
         self.assertTrue(self.ts.is_active())
@@ -786,7 +783,6 @@ class TransportTest(unittest.TestCase):
         self.tc.handshake_timeout = 0.000000000001
         self.ts.start_server(event, server)
         self.assertRaises(EOFError, self.tc.connect,
-                          hostkey=public_host_key,
                           username='slowdive',
                           password='pygmalion')
 

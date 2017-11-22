@@ -77,8 +77,7 @@ class TestEdgeCaseFailures(TestAuth):
         """
         self.start_server()
         with raises(BadAuthenticationType) as info:
-            self.tc.connect(hostkey=self.public_host_key,
-                            username='unknown', password='error')
+            self.tc.connect(username='unknown', password='error')
         assert info.value.allowed_types == ['publickey']
 
     def test_auth_gets_disconnected(self):
@@ -87,7 +86,7 @@ class TestEdgeCaseFailures(TestAuth):
         it as an auth failure.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
         with raises(AuthenticationException):
             self.tc.auth_password('bad-server', 'hello')
 
@@ -113,7 +112,7 @@ class TestPasswordAuth(TestAuth):
         with the right password works.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
         with raises(AuthenticationException):
             self.tc.auth_password(username='slowdive', password='error')
         self.tc.auth_password(username='slowdive', password='pygmalion')
@@ -125,7 +124,7 @@ class TestPasswordAuth(TestAuth):
         if password auth isn't supported but interactive is.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
         remain = self.tc.auth_password('commie', 'cat')
         self.assertEqual([], remain)
         self.verify_finished()
@@ -135,7 +134,7 @@ class TestPasswordAuth(TestAuth):
         verify that utf-8 encoding happens in authentication.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
         remain = self.tc.auth_password('utf8', _pwd)
         self.assertEqual([], remain)
         self.verify_finished()
@@ -146,7 +145,7 @@ class TestPasswordAuth(TestAuth):
         servers.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
         remain = self.tc.auth_password('non-utf8', '\xff')
         self.assertEqual([], remain)
         self.verify_finished()
@@ -159,7 +158,7 @@ class TestInteractiveAuth(TestAuth):
         verify keyboard-interactive auth works.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
 
         def handler(title, instructions, prompts):
             self.got_title = title
@@ -181,7 +180,7 @@ class TestMultipartAuth(TestAuth):
         verify that multipart auth works.
         """
         self.start_server()
-        self.tc.connect(hostkey=self.public_host_key)
+        self.tc.connect()
         remain = self.tc.auth_password(
             username='paranoid',
             password='paranoid',
