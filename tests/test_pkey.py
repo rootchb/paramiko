@@ -30,7 +30,7 @@ import base64
 from paramiko import RSAKey, DSSKey, ECDSAKey, Ed25519Key, Message, util
 from paramiko.py3compat import StringIO, byte_chr, b, bytes, PY2
 
-from .util import _support
+from ._util import _support
 
 
 # from openssh's ssh-keygen

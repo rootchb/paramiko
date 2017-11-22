@@ -32,8 +32,8 @@ from paramiko import (
 from paramiko import AUTH_FAILED, AUTH_PARTIALLY_SUCCESSFUL, AUTH_SUCCESSFUL
 from paramiko.py3compat import u
 
-from .loop import LoopSocket
-from .util import _support, slow
+from ._loop import LoopSocket
+from ._util import _support, slow
 
 
 # TODO: see what other tests in other modules might want to move in here

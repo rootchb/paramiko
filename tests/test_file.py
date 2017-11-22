@@ -27,7 +27,7 @@ from paramiko.common import linefeed_byte, crlf, cr_byte
 from paramiko.file import BufferedFile
 from paramiko.py3compat import BytesIO
 
-from .util import needs_builtin
+from ._util import needs_builtin
 
 
 class LoopbackFile (BufferedFile):

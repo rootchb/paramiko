@@ -44,8 +44,8 @@ from paramiko.common import (
 from paramiko.py3compat import bytes
 from paramiko.message import Message
 
-from .util import needs_builtin, _support, slow
-from .loop import LoopSocket
+from ._util import needs_builtin, _support, slow
+from ._loop import LoopSocket
 
 
 LONG_BANNER = """\

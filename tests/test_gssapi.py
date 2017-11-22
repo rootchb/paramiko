@@ -25,7 +25,7 @@ Test the used APIs for GSS-API / SSPI authentication
 import unittest
 import socket
 
-from .util import needs_gssapi
+from ._util import needs_gssapi
 
 
 @needs_gssapi

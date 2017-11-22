@@ -29,7 +29,7 @@ import unittest
 
 import paramiko
 
-from .util import _support, needs_gssapi
+from ._util import _support, needs_gssapi
 from .test_client import FINGERPRINTS
 
 

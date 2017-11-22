@@ -40,9 +40,9 @@ from paramiko.py3compat import PY2, b, u, StringIO
 from paramiko.common import o777, o600, o666, o644
 from paramiko.sftp_attr import SFTPAttributes
 
-from .util import needs_builtin
-from .stub_sftp import StubServer, StubSFTPServer
-from .util import _support, slow
+from ._util import needs_builtin
+from ._stub_sftp import StubServer, StubSFTPServer
+from ._util import _support, slow
 
 
 ARTICLE = '''

@@ -31,7 +31,7 @@ import unittest
 
 import paramiko
 
-from .util import needs_gssapi
+from ._util import needs_gssapi
 
 
 class NullServer (paramiko.ServerInterface):

@@ -1,5 +1,5 @@
 import os
-from os.path import join
+from os.path import join, exists
 from shutil import rmtree, copytree
 
 from invoke import Collection, task
@@ -46,8 +46,13 @@ def test(
         opts += ' -x'
     modstr = ""
     if module is not None:
-        # NOTE: implicit test_ prefix as we're not on pytest-relaxed yet
-        modstr = " tests/test_{}.py".format(module)
+        # Fall back to test_*.py for the legacy parts of the suite
+        path = "tests/{}.py".format(module)
+        if not exists(path):
+            path = "tests/test_{}.py".format(module)
+        if not exists(path):
+            sys.exit("There's no '{}' to test!".format(path))
+        modstr = " {}".format(path)
     # Switch runner depending on coverage or no coverage.
     # TODO: get pytest's coverage plugin working, IIRC it has issues?
     runner = "pytest"

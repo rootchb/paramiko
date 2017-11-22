@@ -40,7 +40,7 @@ from paramiko.pkey import PublicBlob
 from paramiko.common import PY2
 from paramiko.ssh_exception import SSHException, AuthenticationException
 
-from .util import _support, slow
+from ._util import _support, slow
 
 
 requires_gss_auth = unittest.skipUnless(

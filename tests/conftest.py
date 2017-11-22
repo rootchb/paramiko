@@ -6,9 +6,9 @@ import threading
 import pytest
 from paramiko import RSAKey, SFTPServer, SFTP, Transport
 
-from .loop import LoopSocket
-from .stub_sftp import StubServer, StubSFTPServer
-from .util import _support
+from ._loop import LoopSocket
+from ._stub_sftp import StubServer, StubSFTPServer
+from ._util import _support
 
 
 # TODO: not a huge fan of conftest.py files, see if we can move these somewhere
