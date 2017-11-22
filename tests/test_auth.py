@@ -23,95 +23,14 @@ Some unit tests for authenticating over a Transport.
 import sys
 import threading
 import unittest
-from time import sleep
 
 from paramiko import (
-    Transport, ServerInterface, RSAKey, DSSKey, BadAuthenticationType,
-    InteractiveQuery, AuthenticationException,
+    Transport, RSAKey, DSSKey, BadAuthenticationType,
+    AuthenticationException,
 )
-from paramiko import AUTH_FAILED, AUTH_PARTIALLY_SUCCESSFUL, AUTH_SUCCESSFUL
-from paramiko.py3compat import u
 
 from ._loop import LoopSocket
-from ._util import _support, slow
-
-
-# TODO: see what other tests in other modules might want to move in here
-
-
-_pwd = u('\u2022')
-
-
-class NullServer (ServerInterface):
-    paranoid_did_password = False
-    paranoid_did_public_key = False
-    paranoid_key = DSSKey.from_private_key_file(_support('test_dss.key'))
-
-    def get_allowed_auths(self, username):
-        if username == 'slowdive':
-            return 'publickey,password'
-        if username == 'paranoid':
-            if (
-                not self.paranoid_did_password and
-                not self.paranoid_did_public_key
-            ):
-                return 'publickey,password'
-            elif self.paranoid_did_password:
-                return 'publickey'
-            else:
-                return 'password'
-        if username == 'commie':
-            return 'keyboard-interactive'
-        if username == 'utf8':
-            return 'password'
-        if username == 'non-utf8':
-            return 'password'
-        return 'publickey'
-
-    def check_auth_password(self, username, password):
-        if (username == 'slowdive') and (password == 'pygmalion'):
-            return AUTH_SUCCESSFUL
-        if (username == 'paranoid') and (password == 'paranoid'):
-            # 2-part auth (even openssh doesn't support this)
-            self.paranoid_did_password = True
-            if self.paranoid_did_public_key:
-                return AUTH_SUCCESSFUL
-            return AUTH_PARTIALLY_SUCCESSFUL
-        if (username == 'utf8') and (password == _pwd):
-            return AUTH_SUCCESSFUL
-        if (username == 'non-utf8') and (password == '\xff'):
-            return AUTH_SUCCESSFUL
-        if username == 'bad-server':
-            raise Exception("Ack!")
-        if username == 'unresponsive-server':
-            sleep(5)
-            return AUTH_SUCCESSFUL
-        return AUTH_FAILED
-
-    def check_auth_publickey(self, username, key):
-        if (username == 'paranoid') and (key == self.paranoid_key):
-            # 2-part auth
-            self.paranoid_did_public_key = True
-            if self.paranoid_did_password:
-                return AUTH_SUCCESSFUL
-            return AUTH_PARTIALLY_SUCCESSFUL
-        return AUTH_FAILED
-
-    def check_auth_interactive(self, username, submethods):
-        if username == 'commie':
-            self.username = username
-            return InteractiveQuery(
-                'password',
-                'Please enter a password.',
-                ('Password', False),
-            )
-        return AUTH_FAILED
-
-    def check_auth_interactive_response(self, responses):
-        if self.username == 'commie':
-            if (len(responses) == 1) and (responses[0] == 'cat'):
-                return AUTH_SUCCESSFUL
-        return AUTH_FAILED
+from ._util import _support, slow, NullServer, _pwd
 
 
 class TestAuth(unittest.TestCase):
@@ -188,7 +107,7 @@ class TestEdgeCaseFailures(TestAuth):
         self.start_server()
         self.tc.connect()
         try:
-            self.tc.auth_password('unresponsive-server', 'hello')
+            self.tc.auth_password('slowdive', 'unresponsive-server')
         except:
             etype, evalue, etb = sys.exc_info()
             self.assertTrue(issubclass(etype, AuthenticationException))

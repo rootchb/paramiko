@@ -40,77 +40,13 @@ from paramiko.pkey import PublicBlob
 from paramiko.common import PY2
 from paramiko.ssh_exception import SSHException, AuthenticationException
 
-from ._util import _support, slow
+from ._util import _support, slow, NullServer, FINGERPRINTS
 
 
 requires_gss_auth = unittest.skipUnless(
     paramiko.GSS_AUTH_AVAILABLE, "GSS auth not available"
 )
 
-FINGERPRINTS = {
-    'ssh-dss': b'\x44\x78\xf0\xb9\xa2\x3c\xc5\x18\x20\x09\xff\x75\x5b\xc1\xd2\x6c',
-    'ssh-rsa': b'\x60\x73\x38\x44\xcb\x51\x86\x65\x7f\xde\xda\xa2\x2b\x5a\x57\xd5',
-    'ecdsa-sha2-nistp256': b'\x25\x19\xeb\x55\xe6\xa1\x47\xff\x4f\x38\xd2\x75\x6f\xa5\xd5\x60',
-    'ssh-ed25519': b'\xb3\xd5"\xaa\xf9u^\xe8\xcd\x0e\xea\x02\xb9)\xa2\x80',
-}
-
-
-class NullServer(paramiko.ServerInterface):
-    def __init__(self, *args, **kwargs):
-        # Allow tests to enable/disable specific key types
-        self.__allowed_keys = kwargs.pop('allowed_keys', [])
-        # And allow them to set a (single...meh) expected public blob (cert)
-        self.__expected_public_blob = kwargs.pop('public_blob', None)
-        super(NullServer, self).__init__(*args, **kwargs)
-
-    def get_allowed_auths(self, username):
-        if username == 'slowdive':
-            return 'publickey,password'
-        return 'publickey'
-
-    def check_auth_password(self, username, password):
-        if (username == 'slowdive') and (password == 'pygmalion'):
-            return paramiko.AUTH_SUCCESSFUL
-        if (username == 'slowdive') and (password == 'unresponsive-server'):
-            time.sleep(5)
-            return paramiko.AUTH_SUCCESSFUL
-        return paramiko.AUTH_FAILED
-
-    def check_auth_publickey(self, username, key):
-        try:
-            expected = FINGERPRINTS[key.get_name()]
-        except KeyError:
-            return paramiko.AUTH_FAILED
-        # Base check: allowed auth type & fingerprint matches
-        happy = (
-            key.get_name() in self.__allowed_keys and
-            key.get_fingerprint() == expected
-        )
-        # Secondary check: if test wants assertions about cert data
-        if (
-            self.__expected_public_blob is not None and
-            key.public_blob != self.__expected_public_blob
-        ):
-            happy = False
-        return paramiko.AUTH_SUCCESSFUL if happy else paramiko.AUTH_FAILED
-
-    def check_channel_request(self, kind, chanid):
-        return paramiko.OPEN_SUCCEEDED
-
-    def check_channel_exec_request(self, channel, command):
-        if command != b'yes':
-            return False
-        return True
-
-    def check_channel_env_request(self, channel, name, value):
-        if name == 'INVALID_ENV':
-            return False
-
-        if not hasattr(channel, 'env'):
-            setattr(channel, 'env', {})
-
-        channel.env[name] = value
-        return True
 
 
 class ClientTest(unittest.TestCase):
