@@ -8,7 +8,7 @@ from paramiko import RSAKey, SFTPServer, SFTP, Transport
 
 from ._loop import LoopSocket
 from ._stub_sftp import StubServer, StubSFTPServer
-from ._util import _support
+from ._util import _support, NullServer
 
 
 # TODO: not a huge fan of conftest.py files, see if we can move these somewhere
@@ -26,6 +26,38 @@ if not os.environ.get('DISABLE_LOGGING', False):
         format="[%(relativeCreated)s]\t%(levelname)s:%(name)s:%(message)s",
         datefmt="%H:%M:%S",
     )
+
+
+@pytest.fixture
+def trans():
+    """
+    Create `LoopSocket`-based server/client `Transport`s, yielding the latter.
+    """
+    # NOTE: based on the setup/teardown/start_server/verify_finished methods
+    # found in ye olde test_auth.py
+
+    # "Network" setup
+    socks = LoopSocket()
+    sockc = LoopSocket()
+    sockc.link(socks)
+    tc = Transport(sockc)
+    ts = Transport(socks)
+
+    # Start up the in-memory server
+    host_key = RSAKey.from_private_key_file(_support('test_rsa.key'))
+    ts.add_server_key(host_key)
+    event = threading.Event()
+    server = NullServer()
+    ts.start_server(event, server)
+
+    # Tests frequently need to call Transport.connect on the client side, etc
+    yield tc
+
+    # Close things down
+    tc.close()
+    ts.close()
+    socks.close()
+    sockc.close()
 
 
 def make_sftp_folder():
