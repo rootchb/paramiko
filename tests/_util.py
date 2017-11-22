@@ -1,5 +1,7 @@
 from os.path import dirname, realpath, join
 from time import sleep
+import logging
+import socket
 
 import pytest
 
@@ -7,6 +9,7 @@ from paramiko import (
     AUTH_FAILED,
     AUTH_PARTIALLY_SUCCESSFUL,
     AUTH_SUCCESSFUL,
+    OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
     OPEN_SUCCEEDED,
     DSSKey,
     InteractiveQuery,
@@ -48,7 +51,7 @@ FINGERPRINTS = {
 }
 
 
-class NullServer (ServerInterface):
+class NullServer(ServerInterface):
     paranoid_did_password = False
     paranoid_did_public_key = False
     paranoid_key = DSSKey.from_private_key_file(_support('test_dss.key'))
@@ -145,6 +148,8 @@ class NullServer (ServerInterface):
         return AUTH_FAILED
 
     def check_channel_request(self, kind, chanid):
+        if kind == 'bogus':
+            return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
         return OPEN_SUCCEEDED
 
     def check_channel_exec_request(self, channel, command):
@@ -161,3 +166,38 @@ class NullServer (ServerInterface):
 
         channel.env[name] = value
         return True
+
+    def check_channel_shell_request(self, channel):
+        return True
+
+    def check_global_request(self, kind, msg):
+        self._global_request = kind
+        return False
+
+    def check_channel_x11_request(
+        self,
+        channel,
+        single_connection,
+        auth_protocol,
+        auth_cookie,
+        screen_number,
+    ):
+        self._x11_single_connection = single_connection
+        self._x11_auth_protocol = auth_protocol
+        self._x11_auth_cookie = auth_cookie
+        self._x11_screen_number = screen_number
+        return True
+
+    def check_port_forward_request(self, addr, port):
+        self._listen = socket.socket()
+        self._listen.bind(('127.0.0.1', 0))
+        self._listen.listen(1)
+        return self._listen.getsockname()[1]
+
+    def cancel_port_forward_request(self, addr, port):
+        self._listen.close()
+        self._listen = None
+
+    def check_channel_direct_tcpip_request(self, chanid, origin, destination):
+        self._tcpip_dest = destination
+        return OPEN_SUCCEEDED
