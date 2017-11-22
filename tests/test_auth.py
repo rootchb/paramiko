@@ -28,6 +28,7 @@ from paramiko import (
     Transport, RSAKey, DSSKey, BadAuthenticationType,
     AuthenticationException,
 )
+from pytest import raises
 
 from ._loop import LoopSocket
 from ._util import _support, slow, NullServer, _pwd
@@ -75,14 +76,10 @@ class TestEdgeCaseFailures(TestAuth):
         type is requested.
         """
         self.start_server()
-        try:
+        with raises(BadAuthenticationType) as info:
             self.tc.connect(hostkey=self.public_host_key,
                             username='unknown', password='error')
-            self.assertTrue(False)
-        except:
-            etype, evalue, etb = sys.exc_info()
-            self.assertEqual(BadAuthenticationType, etype)
-            self.assertEqual(['publickey'], evalue.allowed_types)
+        assert info.value.allowed_types == ['publickey']
 
     def test_auth_gets_disconnected(self):
         """
@@ -91,11 +88,8 @@ class TestEdgeCaseFailures(TestAuth):
         """
         self.start_server()
         self.tc.connect(hostkey=self.public_host_key)
-        try:
+        with raises(AuthenticationException):
             self.tc.auth_password('bad-server', 'hello')
-        except:
-            etype, evalue, etb = sys.exc_info()
-            self.assertTrue(issubclass(etype, AuthenticationException))
 
     @slow
     def test_auth_non_responsive(self):
@@ -106,12 +100,8 @@ class TestEdgeCaseFailures(TestAuth):
         self.tc.auth_timeout = 1  # 1 second, to speed up test
         self.start_server()
         self.tc.connect()
-        try:
+        with raises(AuthenticationException, match='Authentication timeout'):
             self.tc.auth_password('slowdive', 'unresponsive-server')
-        except:
-            etype, evalue, etb = sys.exc_info()
-            self.assertTrue(issubclass(etype, AuthenticationException))
-            self.assertTrue('Authentication timeout' in str(evalue))
 
 
 class TestPasswordAuth(TestAuth):
@@ -124,12 +114,8 @@ class TestPasswordAuth(TestAuth):
         """
         self.start_server()
         self.tc.connect(hostkey=self.public_host_key)
-        try:
+        with raises(AuthenticationException):
             self.tc.auth_password(username='slowdive', password='error')
-            self.assertTrue(False)
-        except:
-            etype, evalue, etb = sys.exc_info()
-            self.assertTrue(issubclass(etype, AuthenticationException))
         self.tc.auth_password(username='slowdive', password='pygmalion')
         self.verify_finished()
 
