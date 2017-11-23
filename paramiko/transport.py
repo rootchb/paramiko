@@ -1100,6 +1100,8 @@ class Transport(threading.Thread, ClosingContextManager):
             self.lock.release()
         return chan
 
+    # TODO: consider removing this, it feels either vestigial or overlaps too
+    # much (and very poorly) with `SSHClient`'s domain.
     def connect(
         self,
         hostkey=None,
