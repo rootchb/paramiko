@@ -1,0 +1,2 @@
+# Skip top-level docs dir as it's just a rendered artifact.
+--ignore-dir=docs
