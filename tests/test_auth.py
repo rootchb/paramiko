@@ -28,43 +28,6 @@ from pytest import raises
 from ._util import _support, slow, _pwd
 
 
-class TestEdgeCaseFailures:
-    """
-    Tests situations not involving successful or attempted-but-failed auth.
-
-    E.g. disconnects, invalid auth types, etc.
-    """
-
-    def test_bad_auth_type(self, trans):
-        """
-        verify that we get the right exception when an unsupported auth
-        type is requested.
-        """
-        with raises(BadAuthenticationType) as info:
-            trans.connect(username='unknown', password='error')
-        assert info.value.allowed_types == ['publickey']
-
-    def test_auth_gets_disconnected(self, trans):
-        """
-        verify that we catch a server disconnecting during auth, and report
-        it as an auth failure.
-        """
-        trans.connect()
-        with raises(AuthenticationException):
-            trans.auth_password('bad-server', 'hello')
-
-    @slow
-    def test_auth_non_responsive(self, trans):
-        """
-        verify that authentication times out if server takes to long to
-        respond (or never responds).
-        """
-        trans.auth_timeout = 1  # 1 second, to speed up test
-        trans.connect()
-        with raises(AuthenticationException, match='Authentication timeout'):
-            trans.auth_password('slowdive', 'unresponsive-server')
-
-
 class TestPasswordAuth:
     # TODO: store as new suite along w/ successful password tests (The utf8
     # ones below I think)

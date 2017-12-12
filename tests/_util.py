@@ -151,6 +151,9 @@ class NullServer(ServerInterface):
                 return AUTH_SUCCESSFUL
         return AUTH_FAILED
 
+    def check_auth_none(self, username):
+        return AUTH_SUCCESSFUL if username == 'nobody' else AUTH_FAILED
+
     def check_channel_request(self, kind, chanid):
         if kind == 'bogus':
             return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
