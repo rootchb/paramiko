@@ -15,7 +15,7 @@ from ._util import slow
 # Edge/error cases that aren't strongly tied to a given success case
 #
 
-class BadAuth:
+class EdgeCases:
     def server_does_not_support_our_requested_auth_type(self, trans):
         with raises(BadAuthenticationType) as info:
             # TODO: Authenticator(trans).authenticate('unknown',
@@ -43,7 +43,7 @@ class BadAuth:
 # Single auth sources
 #
 
-class NoneAuth:
+class None_:
     def raises_BadAuthenticationType_if_server_rejects(self, trans):
         # TODO: given this is usually called just as a no-op to check what a
         # server allows, we may want to offer a wrapper for this instead of
@@ -68,11 +68,11 @@ class NoneAuth:
         assert trans.auth_none('nobody') == []
 
 
-class PasswordAuth:
+class Password:
     pass
 
 
-class InteractiveAuth:
+class Interactive:
     # TODO: how exactly is auth_interactive different from auth_password?
     # TODO: and what's the diff between transport's interactive vs
     # interactive_dumb?
@@ -80,11 +80,11 @@ class InteractiveAuth:
     pass
 
 
-class UnencryptedPublicKeyAuth:
+class UnencryptedPubKey:
     pass
 
 
-class EncryptedPublicKeyAuth:
+class EncryptedPubKey:
     pass
 
 
@@ -100,7 +100,7 @@ class ManyAuthsEnterOneAuthLeaves:
 # True multi-factor auth, where more than one source is needed/required
 #
 
-class MultiFactorAuth:
+class MultiFactor:
     pass
 
 
