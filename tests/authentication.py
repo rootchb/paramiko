@@ -68,8 +68,11 @@ class None_:
         assert trans.auth_none('nobody') == []
 
 
-class Password:
-    pass
+class Password_:
+    def incorrect_password_raises_auth_exception(self, trans):
+        with raises(AuthenticationException):
+            trans.start_client()
+            trans.auth_password(username='slowdive', password='error')
 
 
 class Interactive:
@@ -93,7 +96,22 @@ class EncryptedPubKey:
 #
 
 class ManyAuthsEnterOneAuthLeaves:
-    pass
+    # TODO: touch this up, came from old suite
+    def incorrect_password_excepts(self, trans):
+        trans.start_client()
+        with raises(AuthenticationException):
+            trans.auth_password(username='slowdive', password='error')
+        trans.auth_password(username='slowdive', password='pygmalion')
+
+    def test_interactive_auth_fallback(self, trans):
+        """
+        verify that a password auth attempt will fallback to "interactive"
+        if password auth isn't supported but interactive is.
+        """
+        trans.start_client()
+        remains = trans.auth_password('commie', 'cat')
+        # TODO: actually test that interactive was used after password...
+        assert remains == []
 
 
 #

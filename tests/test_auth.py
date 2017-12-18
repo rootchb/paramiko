@@ -29,27 +29,6 @@ from ._util import _support, slow, utf8_password
 
 
 class TestPasswordAuth:
-    # TODO: store as new suite along w/ successful password tests (The utf8
-    # ones below I think)
-    def test_bad_password(self, trans):
-        """
-        verify that a bad password gets the right exception, and that a retry
-        with the right password works.
-        """
-        trans.connect()
-        with raises(AuthenticationException):
-            trans.auth_password(username='slowdive', password='error')
-        trans.auth_password(username='slowdive', password='pygmalion')
-
-    def test_interactive_auth_fallback(self, trans):
-        """
-        verify that a password auth attempt will fallback to "interactive"
-        if password auth isn't supported but interactive is.
-        """
-        trans.connect()
-        remains = trans.auth_password('commie', 'cat')
-        assert remains == []
-
     def test_auth_utf8(self, trans):
         """
         verify that utf-8 encoding happens in authentication.
