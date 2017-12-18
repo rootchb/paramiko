@@ -1,8 +1,8 @@
 from pytest import skip, raises
 
-from paramiko import BadAuthenticationType, AuthenticationException
+from paramiko import BadAuthenticationType, AuthenticationException, DSSKey
 
-from ._util import slow, utf8_password
+from ._util import slow, utf8_password, _support
 
 
 # NOTE: GSSAPI is kind of a standalone feature and has its own tests in
@@ -144,7 +144,20 @@ class ManyAuthsEnterOneAuthLeaves:
 #
 
 class MultiFactor:
-    pass
+    def password_plus_publickey(self, trans):
+        trans.connect()
+        # NOTE: 'paranoid' user triggers explicit check within
+        # get_allowed_auths that tracks password-submission state & updates
+        # return value accordingly, thus mocking real-world two-factor auth.
+        remains = trans.auth_password(
+            username='paranoid',
+            password='paranoid',
+        )
+        assert remains == ['publickey']
+        key = DSSKey.from_private_key_file(_support('test_dss.key'))
+        remains = trans.auth_publickey(username='paranoid', key=key)
+        assert remains == []
+
 
 
 #
