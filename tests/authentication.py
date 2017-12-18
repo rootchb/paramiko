@@ -2,7 +2,7 @@ from pytest import skip, raises
 
 from paramiko import BadAuthenticationType, AuthenticationException
 
-from ._util import slow
+from ._util import slow, utf8_password
 
 
 # NOTE: GSSAPI is kind of a standalone feature and has its own tests in

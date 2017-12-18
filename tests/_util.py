@@ -40,7 +40,7 @@ def needs_builtin(name):
 slow = pytest.mark.slow
 
 
-_pwd = u('\u2022')
+utf8_password = u('\u2022')
 
 
 FINGERPRINTS = {
@@ -97,7 +97,7 @@ class NullServer(ServerInterface):
             if self.paranoid_did_public_key:
                 return AUTH_SUCCESSFUL
             return AUTH_PARTIALLY_SUCCESSFUL
-        if (username == 'utf8') and (password == _pwd):
+        if (username == 'utf8') and (password == utf8_password):
             return AUTH_SUCCESSFUL
         if (username == 'non-utf8') and (password == '\xff'):
             return AUTH_SUCCESSFUL

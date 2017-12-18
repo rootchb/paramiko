@@ -25,7 +25,7 @@ from paramiko import (
 )
 from pytest import raises
 
-from ._util import _support, slow, _pwd
+from ._util import _support, slow, utf8_password
 
 
 class TestPasswordAuth:
@@ -55,7 +55,7 @@ class TestPasswordAuth:
         verify that utf-8 encoding happens in authentication.
         """
         trans.connect()
-        remains = trans.auth_password('utf8', _pwd)
+        remains = trans.auth_password('utf8', utf8_password)
         assert remains == []
 
     def test_auth_non_utf8(self, trans):
