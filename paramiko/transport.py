@@ -1386,6 +1386,8 @@ class Transport(threading.Thread, ClosingContextManager):
             # try to fudge it
             if not fallback or ('keyboard-interactive' not in e.allowed_types):
                 raise
+            # TODO: this feels like perhaps it should move to a higher level,
+            # but maybe it should wait for a larger-scale shakeup?
             try:
                 def handler(title, instructions, fields):
                     if len(fields) > 1:
