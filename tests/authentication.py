@@ -2,7 +2,7 @@ from pytest import skip, raises
 
 from paramiko import BadAuthenticationType, AuthenticationException, DSSKey
 
-from ._util import slow, utf8_password, _support
+from ._util import slow, _support
 
 
 # NOTE: GSSAPI is kind of a standalone feature and has its own tests in
@@ -168,7 +168,7 @@ class MultiFactor:
 class Authenticator_:
     class init:
         def requires_a_Transport(self):
-            skip()   
+            skip()
 
         def transport_must_already_be_started(self):
             skip()
