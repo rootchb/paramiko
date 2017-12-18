@@ -28,26 +28,6 @@ from pytest import raises
 from ._util import _support, slow, utf8_password
 
 
-class TestPasswordAuth:
-    def test_auth_utf8(self, trans):
-        """
-        verify that utf-8 encoding happens in authentication.
-        """
-        # TODO: this doesn't seem to actually verify anything!
-        trans.connect()
-        remains = trans.auth_password('utf8', utf8_password)
-        assert remains == []
-
-    def test_auth_non_utf8(self, trans):
-        """
-        verify that non-utf-8 encoded passwords can be used for broken
-        servers.
-        """
-        trans.connect()
-        remains = trans.auth_password('non-utf8', '\xff')
-        assert remains == []
-
-
 class TestInteractiveAuth:
     # TODO: identify other test cases to expand around this one
     def test_interactive_auth(self, trans):
