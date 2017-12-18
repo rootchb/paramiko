@@ -27,7 +27,7 @@ class EdgeCases:
 
     def disconnections(self, trans):
         # Disconnections during auth step show up as an auth exception
-        trans.connect()
+        trans.start_client()
         with raises(AuthenticationException):
             trans.auth_password('bad-server', 'hello')
 
