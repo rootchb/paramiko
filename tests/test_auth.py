@@ -54,6 +54,7 @@ class TestPasswordAuth:
         """
         verify that utf-8 encoding happens in authentication.
         """
+        # TODO: this doesn't seem to actually verify anything!
         trans.connect()
         remains = trans.auth_password('utf8', utf8_password)
         assert remains == []
