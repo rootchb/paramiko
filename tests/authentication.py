@@ -126,14 +126,16 @@ class ManyAuthsEnterOneAuthLeaves:
         rest = trans.auth_password(username='slowdive', password='pygmalion')
         assert rest == []
 
-    def test_interactive_auth_fallback(self, trans):
-        """
-        verify that a password auth attempt will fallback to "interactive"
-        if password auth isn't supported but interactive is.
-        """
+    def unsupported_password_auth_falls_back_to_interactive(self, trans):
+        # Tests that Transport.password_auth automatically re-attempts with
+        # 'interactive' type auth if password appears unsupported (via
+        # BadAuthenticationType)
         trans.start_client()
+        # 'commie' user:
+        # - triggers allowed_auths of only [interactive]
+        # - is not listed under check_auth_password, so would fail anyways
+        # - is checked for in check_auth_interactive
         remains = trans.auth_password('commie', 'cat')
-        # TODO: actually test that interactive was used after password...
         assert remains == []
 
 
