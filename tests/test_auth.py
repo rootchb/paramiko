@@ -28,30 +28,6 @@ from pytest import raises
 from ._util import _support, slow, utf8_password
 
 
-class TestInteractiveAuth:
-    # TODO: identify other test cases to expand around this one
-    def test_interactive_auth(self, trans):
-        """
-        verify keyboard-interactive auth works.
-        """
-        trans.connect()
-        # TODO: mock the server transport harder instead of using these
-        # globals, ew.
-        global got_title, got_instructions, got_prompts
-        got_title, got_instructions, got_prompts = None, None, None
-        def handler(title, instructions, prompts):
-            # Big meh.
-            global got_title, got_instructions, got_prompts
-            got_title = title
-            got_instructions = instructions
-            got_prompts = prompts
-            return ['cat']
-        remains = trans.auth_interactive('commie', handler)
-        assert got_title == 'password'
-        assert got_prompts == [('Password', False)]
-        assert remains == []
-
-
 class TestMultipartAuth:
     # TODO: clarify the name of this to show it's only one specific multipart
     # auth style

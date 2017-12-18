@@ -80,7 +80,28 @@ class Interactive:
     # TODO: and what's the diff between transport's interactive vs
     # interactive_dumb?
     # TODO: and how (is?) it different from what's used for TOTP
-    pass
+
+    # TODO: identify other test cases to expand around this one
+    def interactive_auth_base_case(self, trans):
+        """
+        verify keyboard-interactive auth works.
+        """
+        trans.connect()
+        # TODO: mock the server transport harder instead of using these
+        # globals, ew.
+        global got_title, got_instructions, got_prompts
+        got_title, got_instructions, got_prompts = None, None, None
+        def handler(title, instructions, prompts):
+            # Big meh.
+            global got_title, got_instructions, got_prompts
+            got_title = title
+            got_instructions = instructions
+            got_prompts = prompts
+            return ['cat']
+        remains = trans.auth_interactive('commie', handler)
+        assert got_title == 'password'
+        assert got_prompts == [('Password', False)]
+        assert remains == []
 
 
 class UnencryptedPubKey:
