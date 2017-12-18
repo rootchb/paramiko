@@ -117,12 +117,14 @@ class EncryptedPubKey:
 #
 
 class ManyAuthsEnterOneAuthLeaves:
-    # TODO: touch this up, came from old suite
-    def incorrect_password_excepts(self, trans):
+    def can_send_good_password_after_bad(self, trans):
         trans.start_client()
         with raises(AuthenticationException):
+            # Will raise an auth exception (wrong password)
             trans.auth_password(username='slowdive', password='error')
-        trans.auth_password(username='slowdive', password='pygmalion')
+        # Should succeed
+        rest = trans.auth_password(username='slowdive', password='pygmalion')
+        assert rest == []
 
     def test_interactive_auth_fallback(self, trans):
         """
