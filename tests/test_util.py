@@ -26,6 +26,7 @@ import os
 from hashlib import sha1
 import unittest
 
+import paramiko # for top-level contents test
 import paramiko.util
 from paramiko.util import lookup_ssh_host_config as host_config, safe_string
 from paramiko.py3compat import StringIO, byte_ord
@@ -67,8 +68,7 @@ class UtilTest(unittest.TestCase):
         """
         verify that all the classes can be imported from paramiko.
         """
-        from paramiko import * # noqa
-        symbols = list(locals().keys())
+        symbols = list(vars(paramiko).keys())
         self.assertTrue('Transport' in symbols)
         self.assertTrue('SSHClient' in symbols)
         self.assertTrue('MissingHostKeyPolicy' in symbols)
