@@ -27,12 +27,18 @@ class EdgeCases:
 
     def disconnections(self, trans):
         # Disconnections during auth step show up as an auth exception
+        # TODO: Authenticator(trans).authenticate('bad-server',
+        # Password('hello')) -> password step has auth exception
         trans.start_client()
         with raises(AuthenticationException):
             trans.auth_password('bad-server', 'hello')
 
     @slow
     def non_responsive_servers_raise_auth_exception_with_timeout(self, trans):
+        # TODO: Authenticator(trans).authenticate('slowdive',
+        # Password('unresponsive-server')) -> auth exception, password step
+        # says 'auth timeout' (so...is this a nested AuthenticationException?
+        # Guess it has to be.)
         trans.auth_timeout = 1  # 1 second, to speed up test
         trans.start_client()
         with raises(AuthenticationException, match='Authentication timeout'):
@@ -69,23 +75,21 @@ class None_:
 
 
 class Password_:
-    def incorrect_password_raises_auth_exception(self, trans):
+    def success_case(self):
+        # TODO: Authenticator(trans).authenticate('slowdive',
+        # Password('pygmalion')) -> password success
+        skip()
+
+    def failure_case(self, trans):
+        # TODO: Authenticator(trans).authenticate('slowdive',
+        # Password('error')) -> password failure
         with raises(AuthenticationException):
             trans.start_client()
             trans.auth_password(username='slowdive', password='error')
 
 
 class Interactive:
-    # TODO: how exactly is auth_interactive different from auth_password?
-    # TODO: and what's the diff between transport's interactive vs
-    # interactive_dumb?
-    # TODO: and how (is?) it different from what's used for TOTP
-
-    # TODO: identify other test cases to expand around this one
-    def interactive_auth_base_case(self, trans):
-        """
-        verify keyboard-interactive auth works.
-        """
+    def custom_handler_base_case(self, trans):
         trans.connect()
         # TODO: mock the server transport harder instead of using these
         # globals, ew.
@@ -103,13 +107,91 @@ class Interactive:
         assert got_prompts == [('Password', False)]
         assert remains == []
 
+    def raises_auth_exception_on_single_auth_failure(self):
+        skip()
+
+    def multiple_internal_steps_success(self):
+        # TODO: i.e. multiple 'internal' auth steps (since interactive is
+        # phrased as potentially being N cycles of info-request ->
+        # info-response! even though I'm unaware of common real-world scenarios
+        # where this is used, instead of being multiple top level auth requests
+        # as in a later suite)
+        # TODO: how should this look in terms of AuthenticationResult? It
+        # breaks the usual "N input sources -> N output results" because there
+        # will only be a single input source ("I want interactive auth and
+        # here's my handler callback") but there may be M interactions with the
+        # user, depending entirely on server configuration. Probably means the
+        # actual 'value' objects in the Result need to be heterogenous, and in
+        # this scenario it'd be an inner iterable?
+        skip()
+
+    def multiple_internal_steps_eventual_failure(self):
+        # TODO: same as above except the final step is a failure. Includes same
+        # problem re: representation in AuthenticationResult.
+        skip()
+
+    def dumb_defaults_to_a_printing_handler(self):
+        # interactive_dumb is just regular interactive which defaults to a
+        # useful CLI-level default handler.
+        # TODO: separate auth class or just a param for the regular interactive
+        # one?
+        # TODO: Prove that 'dumb' style interactive auth just prints the
+        # title/instructions/prompts by default.
+        skip()
+
 
 class UnencryptedPubKey:
-    pass
+    def base_case(self):
+        # TODO: Authenticator(trans).authenticate(username,
+        # PubKey(RSAKey(xxx)))? Or just accept the key object itself? How does
+        # that change encrypted vs unencrypted exactly?
+        skip()
+
+    def unauthorized_key_raises_auth_exception(self):
+        # TODO: that
+        skip()
+
+    def invalid_key_material_raises_other_exception(self):
+        # TODO: this may be out of scope pending determination of what exact
+        # type of objs we accept, if we are still doing file loading on user
+        # behalf then this needs filling out.
+        skip()
+
+    def supports_all_implemented_key_types(self):
+        # TODO: Iterate over all our key classes. pytest fixtures around
+        # base_case instead?
+        skip()
 
 
 class EncryptedPubKey:
-    pass
+    def base_case(self):
+        # TODO: Authenticator for an encrypted key obj (see above re: whether
+        # that's a 'real' source obj or if we just hand in the key; in this
+        # case, we may or may not want to try a passphrase? I.e. what does
+        # authenticate_with_kwargs(username, key_filename=[foo],
+        # passphrase='bar') turn into for its call to authenticate()??
+        # - Does it handle the decryption, allowing authenticate() proper to
+        # say "I only handle already-decrypted key objects"?
+        # - Does it turn into a higher-level object representing key material +
+        # passphrase? (I.e. authenticate() does perform decryption) - what's
+        # the benefit here exactly? Does save users a bit of manual work if all
+        # they have is key + a passphrase from somewhere...
+        # - Can we still get by with just-a-PKey?
+        skip()
+
+    def unauthorized_key_raises_auth_exception(self):
+        # TODO: that
+        skip()
+
+    def invalid_key_material_raises_other_exception(self):
+        # TODO: this may be out of scope pending determination of what exact
+        # type of objs we accept, if we are still doing file loading on user
+        # behalf then this needs filling out.
+        skip()
+
+    def other_key_classes(self):
+        # TODO: same as with unencrypted keys
+        skip()
 
 
 #
@@ -125,6 +207,21 @@ class ManyAuthsEnterOneAuthLeaves:
         # Should succeed
         rest = trans.auth_password(username='slowdive', password='pygmalion')
         assert rest == []
+
+    def bad_password_after_good_is_not_used(self):
+        # TODO: i.e. authenticate(Password('good'), Password('bad')) never
+        # submits the bad password down the pipe - success is success.
+        skip()
+
+    # TODO: probably a good place for pytest parameterization; would be rad to
+    # test all combinatoric combos of each auth type before or after others,
+    # with each type either being valid or invalid.
+    # TODO: so e.g. not only do we want to end up testing [good key, bad
+    # password] but we also want to test [bad key, good password] AND [good
+    # password, bad key] AND [bad password, good key], and so on. and of
+    # course, more than just 2 deep. and not just all types x all types, but
+    # multiple instances of a same type; and so on and so forth.
+    # TODO: can Hypothesis help with this sort of thing?? Haven't looked at it
 
     def unsupported_password_auth_falls_back_to_interactive(self, trans):
         # Tests that Transport.password_auth automatically re-attempts with
@@ -158,6 +255,15 @@ class MultiFactor:
         remains = trans.auth_publickey(username='paranoid', key=key)
         assert remains == []
 
+    def publickey_plus_interactive(self):
+        # TODO: this is now a common 2FA scenario, with the 2nd factor (TOTP)
+        # often being served by a PAM module backing into an API like Duo
+        # Security's.
+        skip()
+
+    # TODO: another possible good spot for parameterization / trying all combos
+    # TODO: though especially here, where it requires statekeeping on the dummy
+    # server, could be a lot of extra work...
 
 
 #
@@ -171,6 +277,7 @@ class Authenticator_:
             skip()
 
         def transport_must_already_be_started(self):
+            # TODO: or...not
             skip()
 
     class authenticate_with_kwargs:
@@ -198,10 +305,39 @@ class Authenticator_:
             # fail), then auth_publickey (& succeed, I guess)
             skip()
 
-        def returns_AuthenticationResult(self):
+        def returns_AuthenticationResult_on_success(self):
+            skip()
+
+        def raises_AuthenticationError_on_failure(self):
+            # TODO: can this be backwards compat re: AuthenticationException,
+            # BadAuthType, etc? Or is it worth calling this 3.0 and not bending
+            # over backwards there?
             skip()
 
 
 # TODO: name it AuthResult instead?
+# NOTE: many nontrivial cases for this class are organically tested above.
 class AuthenticationResult_:
-    pass
+    def single_auth_source_results_in_one_item_results_list(self):
+        skip()
+
+    def multiple_auth_sources_result_in_matching_results_list(self):
+        # TODO: ensure order matches input
+        skip()
+
+    def each_auth_result_is_tagged_with_the_accepted_auth_types(self):
+        # TODO: i.e. include the bits that transport.auth_blah return noting
+        # which further types are acceptable. I.e. for a nontrivial multifactor
+        # auth setup, it should be easy to see exactly what was tried, in what
+        # order, and what the server claimed to allow at that step.
+        skip()
+
+
+class AuthenticationError_:
+    def subclasses_SSHException_for_compatibility(self):
+        skip()
+
+    def attribute_access_for_inner_AuthenticationResult(self):
+        skip()
+
+    # TODO: more conveniences necessary?
