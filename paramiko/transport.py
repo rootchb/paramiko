@@ -1513,7 +1513,6 @@ class Transport(threading.Thread, ClosingContextManager):
         the response. This is good for situations where partial auth is
         achieved by key and then the user has to enter a 2fac token.
         """
-
         if not handler:
             def handler(title, instructions, prompt_list):
                 answers = []
