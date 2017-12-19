@@ -26,23 +26,17 @@ do test file operations in (so no existing files will be harmed).
 import os
 import socket
 import sys
-import threading
-import unittest
 import warnings
 from binascii import hexlify
 from tempfile import mkstemp
 
 import pytest
 
-import paramiko
-import paramiko.util
 from paramiko.py3compat import PY2, b, u, StringIO
 from paramiko.common import o777, o600, o666, o644
 from paramiko.sftp_attr import SFTPAttributes
 
-from ._util import needs_builtin
-from ._stub_sftp import StubServer, StubSFTPServer
-from ._util import _support, slow
+from ._util import needs_builtin, slow
 
 
 ARTICLE = '''
@@ -655,7 +649,7 @@ class TestSFTP(object):
         """
         verify that chdir/getcwd work.
         """
-        assert sftp.getcwd() == None
+        assert sftp.getcwd() is None
         root = sftp.normalize('.')
         if root[-1] != '/':
             root += '/'
@@ -763,7 +757,7 @@ class TestSFTP(object):
             with sftp.open('%s/write_memoryview' % sftp.FOLDER, 'wb') as f:
                 view = memoryview(data)
                 for offset in range(0, len(data), 8):
-                    f.write(view[offset:offset+8])
+                    f.write(view[offset:offset + 8])
 
             with sftp.open('%s/write_memoryview' % sftp.FOLDER, 'rb') as f:
                 assert f.read() == data

@@ -28,15 +28,12 @@ import socket
 import time
 import threading
 import random
-from hashlib import sha1
 import unittest
 
 from paramiko import (
-    Transport, SecurityOptions, ServerInterface, RSAKey, DSSKey, SSHException,
-    ChannelException, Packetizer, 
+    Transport, SecurityOptions, RSAKey, SSHException, ChannelException,
+    Packetizer, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
 )
-from paramiko import AUTH_FAILED, AUTH_SUCCESSFUL
-from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 from paramiko.common import (
     MSG_KEXINIT, cMSG_CHANNEL_WINDOW_ADJUST, MIN_PACKET_SIZE, MIN_WINDOW_SIZE,
     MAX_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, DEFAULT_MAX_PACKET_SIZE,
@@ -77,7 +74,6 @@ class TransportTest(unittest.TestCase):
 
     def setup_test_server(self, client_options=None, server_options=None):
         host_key = RSAKey.from_private_key_file(_support('test_rsa.key'))
-        public_host_key = RSAKey(data=host_key.asbytes())
         self.ts.add_server_key(host_key)
 
         if client_options is not None:
@@ -125,8 +121,7 @@ class TransportTest(unittest.TestCase):
         self.tc.H = b'\x0C\x83\x07\xCD\xE6\x85\x6F\xF3\x0B\xA9\x36\x84\xEB\x0F\x04\xC2\x52\x0E\x9E\xD3'
         self.tc.session_id = self.tc.H
         key = self.tc._compute_key('C', 32)
-        self.assertEqual(b'207E66594CA87C44ECCBA3B3CD39FDDB378E6FDB0F97C54B2AA0CFBF900CD995',
-                          hexlify(key).upper())
+        self.assertEqual(b'207E66594CA87C44ECCBA3B3CD39FDDB378E6FDB0F97C54B2AA0CFBF900CD995', hexlify(key).upper()) # noqa
 
     def test_3_simple(self):
         """
@@ -135,7 +130,6 @@ class TransportTest(unittest.TestCase):
         later tests. :)
         """
         host_key = RSAKey.from_private_key_file(_support('test_rsa.key'))
-        public_host_key = RSAKey(data=host_key.asbytes())
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()
@@ -159,7 +153,6 @@ class TransportTest(unittest.TestCase):
         verify that a long banner doesn't mess up the handshake.
         """
         host_key = RSAKey.from_private_key_file(_support('test_rsa.key'))
-        public_host_key = RSAKey(data=host_key.asbytes())
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()
@@ -241,7 +234,7 @@ class TransportTest(unittest.TestCase):
         self.assertEqual('Hello there.\n', f.readline())
         self.assertEqual('This is on stderr.\n', f.readline())
         self.assertEqual('', f.readline())
-        
+
     def test_6a_channel_can_be_used_as_context_manager(self):
         """
         verify that exec_command() does something reasonable.
@@ -278,7 +271,7 @@ class TransportTest(unittest.TestCase):
         """
         self.setup_test_server()
         try:
-            chan = self.tc.open_channel('bogus')
+            self.tc.open_channel('bogus')
             self.fail('expected exception')
         except ChannelException as e:
             self.assertTrue(e.code == OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED)
@@ -457,7 +450,7 @@ class TransportTest(unittest.TestCase):
         self.setup_test_server()
         chan = self.tc.open_session()
         chan.exec_command('yes')
-        schan = self.ts.accept(1.0)
+        self.ts.accept(1.0)
 
         requested = []
         def handler(c, origin_addr_port, server_addr_port):
@@ -493,7 +486,7 @@ class TransportTest(unittest.TestCase):
         self.setup_test_server()
         chan = self.tc.open_session()
         chan.exec_command('yes')
-        schan = self.ts.accept(1.0)
+        self.ts.accept(1.0)
 
         # open a port on the "server" that the client will ask to forward to.
         greeting_server = socket.socket()
@@ -566,7 +559,7 @@ class TransportTest(unittest.TestCase):
         self.assertEqual(chan.send_ready(), True)
         total = 0
         K = '*' * 1024
-        limit = 1+(64 * 2 ** 15)
+        limit = 1 + (64 * 2 ** 15)
         while total < limit:
             chan.send(K)
             total += len(K)
@@ -639,11 +632,10 @@ class TransportTest(unittest.TestCase):
 
             def run(self):
                 try:
-                    for i in range(1, 1+self.iterations):
+                    for i in range(1, self.iterations + 1):
                         if self.done_event.is_set():
                             break
                         self.watchdog_event.set()
-                        #print i, "SEND"
                         self.chan.send("x" * 2048)
                 finally:
                     self.done_event.set()
@@ -695,9 +687,10 @@ class TransportTest(unittest.TestCase):
             return _negotiate_keys(self, m)
         self.tc._handler_table[MSG_KEXINIT] = _negotiate_keys_wrapper
 
-        # Parameters for the test
-        iterations = 500    # The deadlock does not happen every time, but it
-                            # should after many iterations.
+        # Parameters for the test.
+        # NOTE: The deadlock does not happen every time, but it should after
+        # many iterations.
+        iterations = 500
         timeout = 5
 
         # This event is set when the test is completed
@@ -775,7 +768,6 @@ class TransportTest(unittest.TestCase):
         self.tc.packetizer = SlowPacketizer(self.tc.sock)
         # Continue with regular test red tape.
         host_key = RSAKey.from_private_key_file(_support('test_rsa.key'))
-        public_host_key = RSAKey(data=host_key.asbytes())
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()
@@ -865,7 +857,7 @@ class TransportTest(unittest.TestCase):
             sent = 0
             view = memoryview(data)
             while sent < len(view):
-                sent += chan.send(view[sent:sent+8])
+                sent += chan.send(view[sent:sent + 8])
             self.assertEqual(sfile.read(len(data)), data)
 
             # sendall() accepts a memoryview instance

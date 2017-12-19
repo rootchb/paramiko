@@ -213,7 +213,7 @@ class KexTest (unittest.TestCase):
         self.assertEqual(H, hexlify(transport._H).upper())
         self.assertEqual((b'fake-host-key', b'fake-sig'), transport._verify)
         self.assertTrue(transport._activated)
-        
+
     def test_5_gex_server(self):
         transport = FakeTransport()
         transport.server_mode = True
@@ -394,7 +394,7 @@ class KexTest (unittest.TestCase):
         kex.start_kex()
         self.assertEqual((paramiko.kex_ecdh_nist._MSG_KEXECDH_REPLY,), transport._expect)
 
-        #fake reply
+        # fake reply
         msg = Message()
         msg.add_string('fake-host-key')
         Q_S = unhexlify("043ae159594ba062efa121480e9ef136203fa9ec6b6e1f8723a321c16e62b945f573f3b822258cbcd094b9fa1c125cbfe5f043280893e66863cc0cb4dccbe70210")
@@ -416,8 +416,8 @@ class KexTest (unittest.TestCase):
         kex.start_kex()
         self.assertEqual((paramiko.kex_ecdh_nist._MSG_KEXECDH_INIT,), transport._expect)
 
-        #fake init
-        msg=Message()
+        # fake init
+        msg = Message()
         Q_C = unhexlify("043ae159594ba062efa121480e9ef136203fa9ec6b6e1f8723a321c16e62b945f573f3b822258cbcd094b9fa1c125cbfe5f043280893e66863cc0cb4dccbe70210")
         H = b'2EF4957AFD530DD3F05DBEABF68D724FACC060974DA9704F2AEE4C3DE861E7CA'
         msg.add_string(Q_C)

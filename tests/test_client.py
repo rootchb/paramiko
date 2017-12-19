@@ -37,7 +37,6 @@ from pytest_relaxed import raises
 
 import paramiko
 from paramiko.pkey import PublicBlob
-from paramiko.common import PY2
 from paramiko.ssh_exception import SSHException, AuthenticationException
 
 from ._util import _support, slow, NullServer, FINGERPRINTS
@@ -463,7 +462,8 @@ class SSHClientTest(ClientTest):
         verify that SSHClient's RejectPolicy works,
         even if gssapi-keyex was enabled but not used.
         """
-        # Test for a bug present in paramiko versions released before 2017-08-01
+        # Test for a bug present in paramiko versions released before
+        # 2017-08-01
         threading.Thread(target=self._run).start()
 
         self.tc = paramiko.SSHClient()
@@ -474,7 +474,7 @@ class SSHClientTest(ClientTest):
             self.tc.connect,
             password='pygmalion',
             gss_kex=True,
-             **self.connect_kwargs
+            **self.connect_kwargs
         )
 
     def _client_host_key_bad(self, host_key):

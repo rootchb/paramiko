@@ -30,7 +30,7 @@ from ._util import needs_gssapi
 
 @needs_gssapi
 class GSSAPITest(unittest.TestCase):
-    def setup():
+    def setup(self):
         # TODO: these vars should all come from os.environ or whatever the
         # approved pytest method is for runtime-configuring test data.
         self.krb5_mech = "1.2.840.113554.1.2.2"
@@ -114,9 +114,11 @@ class GSSAPITest(unittest.TestCase):
             )
             # Initialize a GSS-API context.
             target_name = "host/" + socket.getfqdn(self.targ_name)
-            gss_ctxt = sspi.ClientAuth("Kerberos",
-                                        scflags=gss_flags,
-                                        targetspn=target_name)
+            gss_ctxt = sspi.ClientAuth(
+                "Kerberos",
+                scflags=gss_flags,
+                targetspn=target_name,
+            )
             if self.server_mode:
                 error, token = gss_ctxt.authorize(c_token)
                 c_token = token[0].Buffer

@@ -25,7 +25,6 @@ import unittest
 import os
 from binascii import hexlify
 from hashlib import md5
-import base64
 
 from paramiko import RSAKey, DSSKey, ECDSAKey, Ed25519Key, Message, util
 from paramiko.py3compat import StringIO, byte_chr, b, bytes, PY2
@@ -469,7 +468,7 @@ class KeyTest(unittest.TestCase):
 
     def test_ed25519_nonbytes_password(self):
         # https://github.com/paramiko/paramiko/issues/1039
-        key = Ed25519Key.from_private_key_file(
+        Ed25519Key.from_private_key_file(
             _support('test_ed25519_password.key'),
             # NOTE: not a bytes. Amusingly, the test above for same key DOES
             # explicitly cast to bytes...code smell!
@@ -516,7 +515,7 @@ class KeyTest(unittest.TestCase):
         # Delve into blob contents, for test purposes
         msg = Message(key.public_blob.key_blob)
         self.assertEqual(msg.get_text(), 'ssh-rsa-cert-v01@openssh.com')
-        nonce = msg.get_string()
+        msg.get_string() # nonce
         e = msg.get_mpint()
         n = msg.get_mpint()
         self.assertEqual(e, key.public_numbers.e)
