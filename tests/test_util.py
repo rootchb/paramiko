@@ -79,6 +79,8 @@ class UtilTest(unittest.TestCase):
             Channel
             ChannelException
             DSSKey
+            ECDSAKey
+            Ed25519Key
             HostKeys
             Message
             MissingHostKeyPolicy
