@@ -4,7 +4,7 @@ import shutil
 import threading
 
 import pytest
-from paramiko import RSAKey, SFTPServer, SFTP, Transport
+from paramiko import RSAKey, SFTPServer, SFTP, Transport, Authenticator
 
 from ._loop import LoopSocket
 from ._stub_sftp import StubServer, StubSFTPServer
@@ -60,6 +60,16 @@ def trans():
     ts.close()
     socks.close()
     sockc.close()
+
+
+@pytest.fixture
+def authn(trans):
+    """
+    Yields an `Authenticator` wrapping a `Transport` (from `trans`.)
+    """
+    # TODO: call start_client() on the trans too? or push that into
+    # `Authenticator` itself?
+    yield Authenticator(trans)
 
 
 def make_sftp_folder():

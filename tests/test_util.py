@@ -73,6 +73,7 @@ class UtilTest(unittest.TestCase):
             Agent
             AgentKey
             AuthenticationException
+            Authenticator
             AutoAddPolicy
             BadAuthenticationType
             BufferedFile

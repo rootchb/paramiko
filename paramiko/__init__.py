@@ -24,6 +24,7 @@ from paramiko.client import (
     SSHClient, MissingHostKeyPolicy, AutoAddPolicy, RejectPolicy,
     WarningPolicy,
 )
+from paramiko.authenticator import Authenticator
 from paramiko.auth_handler import AuthHandler
 from paramiko.ssh_gss import GSSAuth, GSS_AUTH_AVAILABLE, GSS_EXCEPTIONS
 from paramiko.channel import Channel, ChannelFile
