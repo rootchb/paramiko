@@ -3097,7 +3097,9 @@ class Transport(threading.Thread, ClosingContextManager):
         if resp != MUX_S_PROXY or msg.get_int() != 2:
             raise SSHException(
                 "Mux proxy request - got unexpected reply: 0x{:x} {!r}".format(
-                    resp, msg))
+                    resp, msg
+                )
+            )
 
     _handler_table = {
         MSG_EXT_INFO: _parse_ext_info,
